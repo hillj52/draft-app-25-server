@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+}
+
+model Position {
+  id      Int      @id @default(autoincrement())
+  name    String   @unique
+  code    String   @unique
+  players Player[]
+}
+
+model Player {
+  id         Int                  @id @default(autoincrement())
+  name       String
+  team       String
+  positionId Int
+  updatedAt  DateTime             @updatedAt
+  createdAt  DateTime             @default(now())
+  drafted    DraftRecord?
+  passProj   PassingProjection?
+  bye        ByeWeek              @relation(fields: [team], references: [team])
+  position   Position             @relation(fields: [positionId], references: [id])
+  projPoints ProjectedPoints?
+  receProj   RecievingProjection?
+  rushProj   RushingProjection?
+
+  @@unique([name, team])
+  @@index([name, team])
+}
+
+model ByeWeek {
+  team    String   @id @unique
+  week    Int
+  players Player[]
+}
+
+model PassingProjection {
+  id          Int      @id @default(autoincrement())
+  name        String
+  team        String
+  attempts    Float
+  completions Float
+  yards       Float
+  tds         Float
+  ints        Float
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  player      Player   @relation(fields: [name, team], references: [name, team])
+
+  @@unique([name, team])
+  @@index([name, team])
+}
+
+model RushingProjection {
+  id        Int      @id @default(autoincrement())
+  name      String
+  team      String
+  carries   Float
+  yards     Float
+  tds       Float
+  fumbles   Float
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  player    Player   @relation(fields: [name, team], references: [name, team])
+
+  @@unique([name, team])
+  @@index([name, team])
+}
+
+model RecievingProjection {
+  id         Int      @id @default(autoincrement())
+  name       String
+  team       String
+  receptions Float
+  yards      Float
+  tds        Float
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+  player     Player   @relation(fields: [name, team], references: [name, team])
+
+  @@unique([name, team])
+  @@index([name, team])
+}
+
+model ProjectedPoints {
+  id        Int      @id @default(autoincrement())
+  name      String
+  team      String
+  points    Float    @default(0)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  player    Player   @relation(fields: [name, team], references: [name, team])
+
+  @@unique([name, team])
+  @@index([name, team])
+}
+
+model DraftRecord {
+  id        Int            @id @default(autoincrement())
+  playerId  Int            @unique
+  teamId    Int
+  rosterPos RosterPosition
+  cost      Int
+  updatedAt DateTime       @updatedAt
+  createdAt DateTime       @default(now())
+  team      Team           @relation(fields: [teamId], references: [id])
+  player    Player         @relation(fields: [playerId], references: [id])
+
+  @@unique([rosterPos, teamId])
+}
+
+model Team {
+  id              Int           @id @default(autoincrement())
+  name            String        @unique
+  owner           String
+  budgetRemaining Int           @default(300)
+  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime      @default(now())
+  roster          DraftRecord[]
+}
+
+enum RosterPosition {
+  QB
+  RB1
+  RB2
+  WR1
+  WR2
+  FLEX
+  OP
+  TE
+  K
+  DST
+  BEN1
+  BEN2
+  BEN3
+  BEN4
+  BEN5
+  BEN6
+}
