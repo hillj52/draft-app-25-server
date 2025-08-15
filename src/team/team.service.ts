@@ -13,7 +13,12 @@ export class TeamService {
         roster: {
           include: {
             player: {
-              include: { position: true, projPoints: true },
+              include: {
+                position: true,
+                projPoints: true,
+                drafted: true,
+                value: true,
+              },
             },
           },
         },
@@ -27,7 +32,15 @@ export class TeamService {
       include: {
         roster: {
           include: {
-            player: { include: { position: true, projPoints: true } },
+            player: {
+              include: {
+                position: true,
+                projPoints: true,
+                drafted: true,
+                value: true,
+                bye: true,
+              },
+            },
           },
         },
       },

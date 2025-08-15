@@ -18,6 +18,7 @@ export class PlayerService {
         position: true,
         drafted: true,
         projPoints: true,
+        value: true,
       },
       orderBy: {
         projPoints: {
@@ -39,6 +40,7 @@ export class PlayerService {
         position: true,
         drafted: true,
         projPoints: true,
+        value: true,
       },
     });
     if (!player) {
@@ -61,6 +63,7 @@ export class PlayerService {
         position: true,
         drafted: true,
         projPoints: true,
+        value: true,
       },
     });
     if (!player) {

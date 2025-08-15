@@ -6,6 +6,7 @@ export class PlayerEntity {
   team: string;
   position: string;
   price?: number;
+  value: number;
   byeWeek: number;
   projPoints?: number;
   drafted: boolean;
@@ -19,6 +20,7 @@ export class PlayerEntity {
         projPoints: true;
         position: true;
         bye: true;
+        value: true;
       };
     }>,
   );
@@ -32,6 +34,7 @@ export class PlayerEntity {
         position: true;
         drafted: true;
         bye: true;
+        value: true;
       };
     }>,
   ) {
@@ -43,5 +46,6 @@ export class PlayerEntity {
     this.byeWeek = player.bye.week;
     this.projPoints = player.projPoints?.points;
     this.drafted = !!player.drafted;
+    this.value = player.value ? player.value.value : 0;
   }
 }

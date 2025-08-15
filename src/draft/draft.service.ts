@@ -7,6 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateDraftRecordDTO } from './create.draft.record.dto';
 import { DraftRecordEntity } from './draft.record.entity';
 import { DeleteDraftRecordDTO } from './delete.draft.record.dto';
+import { RosterPosition } from '@prisma/client';
 
 @Injectable()
 export class DraftService {
@@ -18,7 +19,29 @@ export class DraftService {
     price,
     position,
   }: CreateDraftRecordDTO): Promise<DraftRecordEntity> {
+    if ((position as string) == 'BENCH') {
+      const bench = await this._prisma.draftRecord.findMany({
+        where: {
+          teamId,
+          rosterPos: {
+            in: [
+              RosterPosition.BEN1,
+              RosterPosition.BEN2,
+              RosterPosition.BEN3,
+              RosterPosition.BEN4,
+              RosterPosition.BEN5,
+              RosterPosition.BEN6,
+            ],
+          },
+        },
+      });
+      if (bench.length >= 6) {
+        throw new BadRequestException('Bench is full');
+      }
+      position = `BEN${bench.length + 1}` as RosterPosition;
+    }
     const existingRecord = await this._prisma.draftRecord.findFirst({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       where: { rosterPos: position, teamId },
     });
     if (existingRecord) {
@@ -36,6 +59,7 @@ export class DraftService {
         throw new BadRequestException('Not enough budget remaining');
       }
       const { id } = await tx.draftRecord.create({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         data: { teamId, playerId, cost: price, rosterPos: position },
       });
       await tx.team.update({
@@ -59,6 +83,8 @@ export class DraftService {
             projPoints: true,
             position: true,
             bye: true,
+            value: true,
+            drafted: true,
           },
         },
         team: {
@@ -73,6 +99,8 @@ export class DraftService {
                     projPoints: true,
                     position: true,
                     bye: true,
+                    value: true,
+                    drafted: true,
                   },
                 },
               },

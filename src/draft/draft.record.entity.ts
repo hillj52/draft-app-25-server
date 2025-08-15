@@ -17,6 +17,8 @@ export class DraftRecordEntity {
             projPoints: true;
             position: true;
             bye: true;
+            value: true;
+            drafted: true;
           };
         };
         team: {
@@ -31,6 +33,8 @@ export class DraftRecordEntity {
                     projPoints: true;
                     position: true;
                     bye: true;
+                    value: true;
+                    drafted: true;
                   };
                 };
               };

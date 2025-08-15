@@ -29,11 +29,12 @@ model Player {
   createdAt  DateTime             @default(now())
   drafted    DraftRecord?
   passProj   PassingProjection?
-  bye        ByeWeek              @relation(fields: [team], references: [team])
   position   Position             @relation(fields: [positionId], references: [id])
+  bye        ByeWeek              @relation(fields: [team], references: [team])
   projPoints ProjectedPoints?
   receProj   RecievingProjection?
   rushProj   RushingProjection?
+  value      Value?
 
   @@unique([name, team])
   @@index([name, team])
@@ -107,15 +108,15 @@ model ProjectedPoints {
 }
 
 model DraftRecord {
-  id        Int            @id @default(autoincrement())
-  playerId  Int            @unique
+  id        Int      @id @default(autoincrement())
+  playerId  Int      @unique
   teamId    Int
   rosterPos RosterPosition
   cost      Int
-  updatedAt DateTime       @updatedAt
-  createdAt DateTime       @default(now())
-  team      Team           @relation(fields: [teamId], references: [id])
-  player    Player         @relation(fields: [playerId], references: [id])
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  player    Player   @relation(fields: [playerId], references: [id])
+  team      Team     @relation(fields: [teamId], references: [id])
 
   @@unique([rosterPos, teamId])
 }
@@ -128,6 +129,15 @@ model Team {
   updatedAt       DateTime      @updatedAt
   createdAt       DateTime      @default(now())
   roster          DraftRecord[]
+}
+
+model Value {
+  id        Int      @id @default(autoincrement())
+  playerId  Int      @unique
+  value     Int
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  player    Player   @relation(fields: [playerId], references: [id])
 }
 
 enum RosterPosition {

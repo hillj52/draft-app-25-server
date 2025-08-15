@@ -48,6 +48,16 @@ export class TeamEntity {
     return this.roster.get('TE');
   }
 
+  @Expose({ name: 'k ' })
+  getK() {
+    return this.roster.get('K');
+  }
+
+  @Expose({ name: 'dst' })
+  getDST() {
+    return this.roster.get('DST');
+  }
+
   @Expose({ name: 'bench' })
   getBEN1() {
     const bench: PlayerEntity[] = [];
@@ -82,6 +92,7 @@ export class TeamEntity {
                 rushProj: true;
                 receProj: true;
                 bye: true;
+                value: true;
               };
             };
           };
@@ -103,6 +114,7 @@ export class TeamEntity {
                 receProj: true;
                 drafted: true;
                 bye: true;
+                value: true;
               };
             };
           };

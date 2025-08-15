@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 import { PrismaClient } from '@prisma/client';
 import puppeteer, { Browser, Page } from 'puppeteer';
+import { createReadStream } from 'fs';
+import { parse } from 'csv-parse';
 
 interface PlayerProjection {
   name: string;
@@ -64,6 +66,14 @@ interface CreateDataList {
   }[];
 }
 
+interface ProjectionCSVData {
+  name: string;
+  position: string;
+  team: string;
+  byeWeek: string;
+  price: string;
+}
+
 const td = 6;
 const ppr = 1;
 const passYards = 20;
@@ -74,6 +84,7 @@ const prisma = new PrismaClient();
 
 const tableNames = [
   'DraftRecord',
+  'Value',
   'PassingProjection',
   'ProjectedPoints',
   'RecievingProjection',
@@ -517,6 +528,46 @@ async function createPlayersForPosition(
   await prisma.projectedPoints.createMany({ data: data.projPoints });
 }
 
+async function updatePlayerValues(data: ProjectionCSVData[]) {
+  const values = await Promise.all(
+    data.map(async ({ name, team, price }) => {
+      const player = await prisma.player.findUnique({
+        where: { name_team: { name: name.trim(), team: team.trim() } },
+      });
+      if (!player) {
+        throw new Error(`Player not found ${name} - ${team}`);
+      }
+      return { playerId: player.id, value: +price };
+    }),
+  );
+  await prisma.value.createMany({ data: values });
+}
+
+function parseCSVData(): Promise<ProjectionCSVData[]> {
+  const promise: Promise<ProjectionCSVData[]> = new Promise(
+    (resolve, reject) => {
+      const filePath = 'prisma/cheatsheet.csv';
+      const records: ProjectionCSVData[] = [];
+      const parser = createReadStream(filePath).pipe(
+        parse({ columns: true, delimiter: ',' }),
+      );
+      parser.on('data', (record) => {
+        console.log('data:', record);
+        records.push(record);
+      });
+      parser.on('end', () => {
+        console.log('Finished parsing csv');
+        resolve(records);
+      });
+      parser.on('error', (err) => {
+        console.error('Error:', err);
+        reject(new Error(err.message));
+      });
+    },
+  );
+  return promise;
+}
+
 async function main() {
   for (const tableName of tableNames) {
     console.log('Deleting: ', tableName);
@@ -600,6 +651,10 @@ async function main() {
   await startPuppeteer();
   await scrapeData();
   await stopPuppeteer();
+
+  // CSV
+  const csvData = await parseCSVData();
+  await updatePlayerValues(csvData);
 }
 
 main()
